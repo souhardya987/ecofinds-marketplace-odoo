@@ -1,56 +1,42 @@
-import React, { useState, useEffect } from 'react';
-import { fetchProducts } from '../api';
-import ProductCard from '../components/ProductCard';
+import React from "react";
+import { Link } from "react-router-dom";
 
 const HomePage = () => {
-  const [products, setProducts] = useState([]);
-  const [search, setSearch] = useState('');
-
-  useEffect(() => {
-    const loadProducts = async () => {
-      try {
-        const { data } = await fetchProducts(search);
-        setProducts(data);
-      } catch (error) {
-        console.error("Failed to fetch products:", error);
-        setProducts([]); 
-      }
-    };
-    loadProducts();
-  }, [search]);
-
   return (
-    <div className="container mx-auto space-y-8">
-      <div className="border-2 border-gray-800 rounded-md h-48 flex items-center justify-center">
-        <p className="text-2xl">Banner Image</p>
-      </div>
-      <div className="flex gap-4">
-        <input
-          type="text"
-          placeholder="Search..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="p-2 border-2 border-gray-800 rounded-md flex-grow"
-        />
-        <button className="p-2 border-2 border-gray-800 rounded-md bg-gray-200">Sort</button>
-        <button className="p-2 border-2 border-gray-800 rounded-md bg-gray-200">Filter</button>
-      </div>
-      <div>
-        <h2 className="text-xl font-bold mb-4">All categories</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="border-2 border-gray-800 rounded-md h-24 flex items-center justify-center"><p>Category 1</p></div>
-          <div className="border-2 border-gray-800 rounded-md h-24 flex items-center justify-center"><p>Category 2</p></div>
-          <div className="border-2 border-gray-800 rounded-md h-24 flex items-center justify-center"><p>Category 3</p></div>
-          <div className="border-2 border-gray-800 rounded-md h-24 flex items-center justify-center"><p>Category 4</p></div>
-        </div>
-      </div>
-      <div>
-        <h2 className="text-xl font-bold mb-4">Products</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map((product) => (
-                <ProductCard key={product.id || product._id} product={product} />
-            ))}
-        </div>
+    <div className="max-w-5xl mx-auto py-16 px-6 text-center">
+      <h1 className="text-5xl font-bold text-gray-800 mb-6">
+        Welcome to EcoFinds
+      </h1>
+      <p className="text-lg text-gray-600 mb-12">
+        Discover great deals or sell your items with ease. Choose an option to get started.
+      </p>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <Link
+          to="/shop"
+          className="flex flex-col items-center justify-center p-10 rounded-2xl bg-white shadow-xl hover:shadow-2xl transition-shadow border border-gray-100"
+        >
+          <img
+            src="https://img.icons8.com/fluency/96/shopping-bag.png"
+            alt="Shop"
+            className="mb-6"
+          />
+          <h2 className="text-2xl font-semibold text-gray-800 mb-2">Shop Products</h2>
+          <p className="text-gray-500">Browse listings from people around you.</p>
+        </Link>
+
+        <Link
+          to="/add-product"
+          className="flex flex-col items-center justify-center p-10 rounded-2xl bg-white shadow-xl hover:shadow-2xl transition-shadow border border-gray-100"
+        >
+          <img
+            src="https://img.icons8.com/fluency/96/add-shopping-cart.png"
+            alt="Sell"
+            className="mb-6"
+          />
+          <h2 className="text-2xl font-semibold text-gray-800 mb-2">Sell an Item</h2>
+          <p className="text-gray-500">List your item for sale in just a few clicks.</p>
+        </Link>
       </div>
     </div>
   );

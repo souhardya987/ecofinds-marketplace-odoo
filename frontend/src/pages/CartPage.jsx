@@ -1,58 +1,111 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { createOrder } from '../api';
+import React, { useEffect, useState } from "react";
 
 const CartPage = () => {
-  const [cartItems, setCartItems] = useState([]);
-  const navigate = useNavigate();
+  const [cart, setCart] = useState([]);
 
   useEffect(() => {
-    setCartItems(JSON.parse(localStorage.getItem('cart')) || []);
+    const storedCart = JSON.parse(localStorage.getItem("cart") || "[]");
+    setCart(storedCart);
   }, []);
 
-  const totalPrice = cartItems.reduce((acc, item) => acc + parseFloat(item.price) * item.qty, 0).toFixed(2);
+  const formatPrice = (value) =>
+    new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(value);
 
-  const handleCheckout = async () => {
-    if (cartItems.length === 0) {
-        alert("Your cart is empty.");
-        return;
-    }
-    try {
-        const orderData = {
-            orderItems: cartItems.map(item => ({ ...item, _id: (item.id || item._id) })),
-            totalPrice: totalPrice,
-        };
-        await createOrder(orderData);
-        alert('Order placed successfully!');
-        localStorage.removeItem('cart');
-        navigate('/profile');
-    } catch (error) {
-        alert('Checkout failed. Please make sure you are logged in.');
-    }
+  const handleRemove = (id) => {
+    const updated = cart.filter((item) => item.id !== id);
+    setCart(updated);
+    localStorage.setItem("cart", JSON.stringify(updated));
   };
 
+  const handleCheckout = () => {
+    if (cart.length === 0) {
+      alert("Your cart is empty!");
+      return;
+    }
+
+    const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+    const total = cart.reduce(
+      (sum, item) => sum + item.price * (item.quantity || 1),
+      0
+    );
+
+    const newOrder = {
+      id: Date.now(),
+      products: cart,
+      totalPrice: total,
+      createdAt: new Date().toISOString(),
+    };
+
+    const updatedOrders = [...orders, newOrder];
+    localStorage.setItem("orders", JSON.stringify(updatedOrders));
+
+    console.log("✅ Order saved:", newOrder); // Debug log
+    alert("Checkout successful! 🎉 Your order has been placed.");
+
+    setCart([]);
+    localStorage.removeItem("cart");
+  };
+
+  const total = cart.reduce(
+    (sum, item) => sum + item.price * (item.quantity || 1),
+    0
+  );
+
   return (
-    <div className="max-w-2xl mx-auto border-2 border-gray-800 rounded-md p-6 mt-10">
-        <h1 className="text-2xl font-bold mb-6 text-center">Cart Page</h1>
-        <div className="space-y-4">
-            {cartItems.length > 0 ? (
-                cartItems.map(item => (
-                    <div key={item.id || item._id} className="border-2 border-gray-800 rounded-md p-4">
-                        <p>{item.name} - ${parseFloat(item.price).toFixed(2)} x {item.qty}</p>
-                    </div>
-                ))
-            ) : (
-                <div className="border-2 border-gray-800 rounded-md p-4 text-center">Your cart is empty.</div>
-            )}
-        </div>
-        <div className="mt-6">
-            <p className="text-lg text-right">Total price for {cartItems.length} items: ${totalPrice}</p>
-        </div>
-        <div className="mt-4">
-            <button onClick={handleCheckout} className="w-full p-2 border-2 border-gray-800 rounded-md bg-gray-200 hover:bg-gray-300">
-                Checkout
+    <div className="max-w-5xl mx-auto py-10 px-6">
+      <h1 className="text-4xl font-bold text-gray-800 mb-8 text-center">
+        Your Shopping Cart
+      </h1>
+
+      {cart.length === 0 ? (
+        <p className="text-center text-gray-500 text-lg">
+          Your cart is empty. Start adding some products!
+        </p>
+      ) : (
+        <div className="space-y-6">
+          {cart.map((item) => (
+            <div
+              key={item.id}
+              className="flex justify-between items-center bg-white rounded-2xl shadow-md p-6 hover:shadow-lg transition-shadow"
+            >
+              <div className="flex items-center space-x-4">
+                <img
+                  src={item.imageUrl}
+                  alt={item.name}
+                  className="w-20 h-20 object-cover rounded-xl shadow-sm"
+                />
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    {item.name}
+                  </h2>
+                  <p className="text-gray-600">{formatPrice(item.price)}</p>
+                  <p className="text-sm text-gray-500">
+                    Quantity: {item.quantity || 1}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => handleRemove(item.id)}
+                className="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+
+          <div className="flex justify-between items-center bg-gray-100 p-6 rounded-2xl shadow-inner mt-8">
+            <h2 className="text-2xl font-bold text-gray-800">
+              Total: {formatPrice(total)}
+            </h2>
+            <button
+              onClick={handleCheckout}
+              className="px-6 py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
+            >
+              Checkout
             </button>
+          </div>
         </div>
+      )}
     </div>
   );
 };
